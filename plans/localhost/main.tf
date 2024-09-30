@@ -23,8 +23,8 @@ resource "juju_model" "charmed-hpc" {
 module "controller" {
   source = "git::https://github.com/charmed-hpc/slurm-charms//charms/slurmctld/terraform"
 
-  model_name = var.model
-  app_name   = "contoller"
+  model_name = juju_model.charmed-hpc.name
+  app_name   = "controller"
   channel    = var.controller-channel
   units      = var.controller-scale
 }
@@ -32,7 +32,7 @@ module "controller" {
 module "compute" {
   source = "git::https://github.com/charmed-hpc/slurm-charms//charms/slurmd/terraform"
 
-  model_name = var.model
+  model_name = juju_model.charmed-hpc.name
   app_name   = "compute"
   channel    = var.compute-channel
   units      = var.compute-scale
@@ -41,7 +41,7 @@ module "compute" {
 module "database" {
   source = "git::https://github.com/charmed-hpc/slurm-charms//charms/slurmdbd/terraform"
 
-  model_name = var.model
+  model_name = juju_model.charmed-hpc.name
   app_name   = "database"
   channel    = var.database-channel
   units      = var.database-scale
@@ -50,7 +50,7 @@ module "database" {
 module "rest-api" {
   source = "git::https://github.com/charmed-hpc/slurm-charms//charms/slurmrestd/terraform"
 
-  model_name = var.model
+  model_name = juju_model.charmed-hpc.name
   app_name   = "rest-api"
   channel    = var.rest-api-channel
   units      = var.rest-api-scale
@@ -59,7 +59,7 @@ module "rest-api" {
 # FIXME: Source from upstream mysql operator once tf module is published.
 resource "juju_application" "mysql" {
   name = "mysql"
-  model = var.model
+  model = juju_model.charmed-hpc.name
 
   charm {
     name     = "mysql"
@@ -73,17 +73,18 @@ resource "juju_application" "mysql" {
 # FIXME: Source from upstream mysql-router operator once tf module is published.
 resource "juju_application" "database-mysql-router" {
   name = "database-mysql-router"
-  model = var.model
+  model = juju_model.charmed-hpc.name
 
   charm {
     name     = "mysql-router"
     channel  = var.mysql-router-channel
     revision = var.mysql-router-revision
   }
+  units = 0
 }
 
 resource "juju_integration" "compute-to-controller" {
-  model = var.model
+  model = juju_model.charmed-hpc.name
 
   application {
     name     = module.compute.app_name
@@ -97,7 +98,7 @@ resource "juju_integration" "compute-to-controller" {
 }
 
 resource "juju_integration" "database-to-controller" {
-  model = var.model
+  model = juju_model.charmed-hpc.name
 
   application {
     name     = module.database.app_name
@@ -111,7 +112,7 @@ resource "juju_integration" "database-to-controller" {
 }
 
 resource "juju_integration" "rest-api-to-controller" {
-  model = var.model
+  model = juju_model.charmed-hpc.name
 
   application {
     name     = module.rest-api.app_name
@@ -125,7 +126,7 @@ resource "juju_integration" "rest-api-to-controller" {
 }
 
 resource "juju_integration" "database-to-mysql-router" {
-  model = var.model
+  model = juju_model.charmed-hpc.name
 
   application {
     name     = module.database.app_name
@@ -139,7 +140,7 @@ resource "juju_integration" "database-to-mysql-router" {
 }
 
 resource "juju_integration" "mysql-router-to-mysql" {
-  model = var.model
+  model = juju_model.charmed-hpc.name
 
   application {
     name     = juju_application.database-mysql-router.name
