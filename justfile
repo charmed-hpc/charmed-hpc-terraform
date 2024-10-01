@@ -22,10 +22,8 @@ default:
 # initialize charmed hpc deployment plans
 init:
   #!/usr/bin/env bash
-  for plan in plans/*/; do
-    echo "{{bold}}Initializing plan $(basename ${plan})...{{normal}}"
-    tofu -chdir=${plan} init
-  done
+  echo "{{bold}}Initializing plan...{{normal}}"
+  tofu init
 
 # format charmed hpc deployment plans
 fmt:
@@ -35,10 +33,8 @@ fmt:
 check: init
   #!/usr/bin/env bash
   tofu fmt -check -recursive
-  for plan in plans/*/; do
-    echo "{{bold}}Validating plan $(basename ${plan})...{{normal}}"
-    tofu -chdir=${plan} validate
-  done
+  echo "{{bold}}Validating plan...{{normal}}"
+  tofu validate
 
 # clean charmed hpc project directory
 clean:
@@ -46,26 +42,15 @@ clean:
   find . -name .terraform.lock.hcl -type f | xargs rm -rf
   find . -name "terraform.tfstate*" -type f | xargs rm -rf
 
-[private]
-_exists target:
+# deploy charmed hpc cluster
+deploy: init
   #!/usr/bin/env bash
-  if [[ ! -d "plans/{{target}}" ]]; then
-    echo "{{bold}}{{target}}{{normal}} is not a valid Charmed HPC deployment plan"
-    exit 1
-  fi
-
-# deploy charmed hpc cluster using plan `target`
-deploy target: (_exists target)
-  #!/usr/bin/env bash
-  cd plans/{{target}}
-  tofu init
   tofu plan
   tofu apply -auto-approve
 
-# destroy charmed hpc cluster deployed using plan `target`
-destroy target: (_exists target)
+# destroy charmed hpc cluster deployed
+destroy:
   #!/usr/bin/env bash
-  cd plans/{{target}}
   tofu apply -destroy -auto-approve
 
 # show available recipes

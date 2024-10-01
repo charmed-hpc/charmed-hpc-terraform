@@ -58,7 +58,7 @@ module "rest-api" {
 
 # FIXME: Source from upstream mysql operator once tf module is published.
 resource "juju_application" "mysql" {
-  name = "mysql"
+  name  = "mysql"
   model = juju_model.charmed-hpc.name
 
   charm {
@@ -72,7 +72,7 @@ resource "juju_application" "mysql" {
 
 # FIXME: Source from upstream mysql-router operator once tf module is published.
 resource "juju_application" "database-mysql-router" {
-  name = "database-mysql-router"
+  name  = "database-mysql-router"
   model = juju_model.charmed-hpc.name
 
   charm {
