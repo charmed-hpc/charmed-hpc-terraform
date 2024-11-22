@@ -54,16 +54,16 @@ variable "database-scale" {
   default     = 1
 }
 
+variable "grafana-agent-channel" {
+  description = "Channel to deploy grafana-agent-operator from."
+  type        = string
+  default     = "latest/stable"
+}
+
 variable "mysql-channel" {
   description = "Channel to deploy mysql from."
   type        = string
   default     = "8.0/stable"
-}
-
-variable "mysql-revision" {
-  description = "Revision of mysql to deploy from channel."
-  type        = number
-  default     = null
 }
 
 variable "mysql-scale" {
