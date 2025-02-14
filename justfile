@@ -10,49 +10,53 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.
+# limitations under the License.\
+# Necessary to use `||` logical operator.
 
-bold := `tput bold`
-normal := `tput sgr0`
+set unstable := true
+
+project_dir := justfile_directory()
+modules_dir := project_dir / "modules"
+default_module_list := shell("ls -d -- $1/*", modules_dir)
 
 [private]
 default:
-  @just help
+    @just help
 
-# initialize charmed hpc deployment plans
-init:
-  #!/usr/bin/env bash
-  echo "{{bold}}Initializing plan...{{normal}}"
-  tofu init
+# Initialize Terraform modules
+[group("terraform")]
+init *modules:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    modules=({{ prepend(modules_dir, modules) || default_module_list }})
+    for module in ${modules}; do
+        tofu -chdir=${module} init
+    done
 
-# format charmed hpc deployment plans
+# Validate Terraform modules
+[group("terraform")]
+validate *modules: (init modules)
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    modules=({{ prepend(modules_dir, modules) || default_module_list }})
+    for module in ${modules}; do
+        tofu -chdir=${module} fmt -check
+        tofu -chdir=${module} validate
+    done
+
+# Apply formatting standards to project
+[group("dev")]
 fmt:
-  tofu fmt -recursive
+    just --fmt --unstable
+    tofu fmt -recursive
 
-# check that charmed hpc deployment plans are valid
-check: init
-  #!/usr/bin/env bash
-  tofu fmt -check -recursive
-  echo "{{bold}}Validating plan...{{normal}}"
-  tofu validate
-
-# clean charmed hpc project directory
+# Clean project directory
+[group("dev")]
 clean:
-  find . -name .terraform -type d | xargs rm -rf
-  find . -name .terraform.lock.hcl -type f | xargs rm -rf
-  find . -name "terraform.tfstate*" -type f | xargs rm -rf
-
-# deploy charmed hpc cluster
-deploy: init
-  #!/usr/bin/env bash
-  tofu plan
-  tofu apply -auto-approve
-
-# destroy charmed hpc cluster deployed
-destroy:
-  #!/usr/bin/env bash
-  tofu apply -destroy -auto-approve
+    find . -name .terraform -type d | xargs rm -rf
+    find . -name .terraform.lock.hcl -type f | xargs rm -rf
+    find . -name "terraform.tfstate*" -type f | xargs rm -rf
 
 # show available recipes
 help:
-  @just --list --unsorted
+    @just --list --unsorted

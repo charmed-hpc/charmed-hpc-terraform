@@ -24,12 +24,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          sudo snap install --classic opentofu
-          sudo apt-get update
-          sudo apt-get install -y just
-      - name: Run tests
-        env:
-          TERM: xterm-256color
-        run: just check
+      - name: Install `opentofu`
+        run: sudo snap install opentofu --classic
+      - name: Install `just`
+        uses: extractions/setup-just@v2
+        with:
+          just-version: 1.38.0
+      - name: Run validation tests
+        run: just validate

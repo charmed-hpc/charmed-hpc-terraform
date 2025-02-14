@@ -1,8 +1,13 @@
-# Terraform plans for deployment of Charmed HPC
+# Charmed HPC Terraform
 
-Terraform for deploying a full Charmed HPC cluster using the Slurm workload manager.
+Terraform modules for deploying components of a Charmed HPC cluster.
 
-The plans make use of the [Juju Terraform Provider](https://github.com/juju/terraform-provider-juju) to interact with a previously bootstrapped [Juju](https://juju.is) controller. A `justfile` is provided to simplify deployment through the [just](https://github.com/casey/just) command runner and [OpenTofu](https://opentofu.org/) infrastructure as code tool.
+The [`modules`](./modules) directory contains modules that make use of the
+[Juju Terraform Provider](https://github.com/juju/terraform-provider-juju) to interact with a
+previously bootstrapped [Juju](https://juju.is) controller.
+
+Furthermore, the [`examples`](./examples) directory offers example deployments that can be copy-pasted
+to kickstart your own deployments.
 
 ## ✨ Getting started
 
@@ -12,10 +17,87 @@ A Juju 3.x controller [bootstrapped](https://juju.is/docs/juju/bootstrapping) on
 # Prerequisites
 juju bootstrap <cloud name> <controller name>
 sudo snap install --classic opentofu
-sudo apt install just
+```
 
-# Deploy with a single command!
-just deploy
+Then, create a Terraform plan to deploy the core components:
+
+```terraform
+terraform {
+  required_providers {
+    juju = {
+      source  = "juju/juju"
+      version = ">= 0.16.0"
+    }
+  }
+}
+
+provider "juju" {}
+
+resource "juju_model" "charmed-hpc" {
+  name = "charmed-hpc"
+}
+
+## MySQL - provides backing database for the accounting node.
+module "mysql" {
+  source = "git::https://github.com/canonical/mysql-operator//terraform"
+
+  juju_model_name = juju_model.charmed-hpc.name
+  app_name        = "mysql"
+  channel         = "8.0/stable"
+  units           = 1
+}
+
+module "slurm" {
+  source = "git::https://github.com/charmed-hpc/charmed-hpc-terraform//modules/slurm"
+
+  model_name = juju_model.charmed-hpc.name
+  database_backend = {
+    name     = module.mysql.application_name,
+    endpoint = module.mysql.provides.database
+  }
+
+  # Optional settings for the controller node.
+  controller = {
+    app_name = "slurmctld"
+  }
+
+  # Optional settings for the database node.
+  database = {
+    app_name = "slurmdbd"
+  }
+
+  # Optional settings for the REST API node.
+  rest_api = {
+    app_name = "slurmrestd"
+  }
+
+  # Optional settings for the kiosk node.
+  kiosk = {
+    app_name = "sackd",
+    units    = 1,
+  }
+
+  # Compute partitions to be deployed.
+  compute_partitions = {
+    "default" : {
+      units = 1,
+    },
+    "gpu" : {
+      units = 1,
+    }
+  }
+  depends_on = [
+    juju_model.charmed-hpc
+  ]
+}
+```
+
+Finally, plan and deploy!
+
+```shell
+tofu init
+tofu plan
+tofu apply -auto-approve
 ```
 
 ## 🤔 What's next?
@@ -32,13 +114,6 @@ A useful command to help while hacking on the plans is:
 
 ```shell
 just check  # Checks file formatting and syntax are valid.
-```
-
-or equivalent [OpenTofu](https://opentofu.org/) commands:
-
-```shell
-tofu fmt -check -recursive      # Apply formatting standards to files.
-tofu validate                   # Ensure files are syntactically valid.
 ```
 
 If you're interested in contributing, take a look at our [contributing guidelines](./CONTRIBUTING.md).
