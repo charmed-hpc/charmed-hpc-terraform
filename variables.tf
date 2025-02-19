@@ -13,7 +13,7 @@
 # limitations under the License.
 
 variable "model" {
-  description = "Name of Charmed HPC cluster"
+  description = "Name of the Charmed HPC cluster."
   type        = string
   default     = "charmed-hpc"
 }
