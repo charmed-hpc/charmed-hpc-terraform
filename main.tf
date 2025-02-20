@@ -14,7 +14,17 @@
 
 # Deploy a minimal Charmed HPC cloud on LXD
 
-provider "juju" {}
+data "external" "controller_addresses" {
+  program = ["python3", "${path.module}/get_controller_addresses.py"]
+}
+
+provider "juju" {
+  controller_addresses = (
+    length(data.external.controller_addresses.result.controller_addresses) > 0
+    ? data.external.controller_addresses.result.controller_addresses
+    : null
+  )
+}
 
 resource "juju_model" "charmed-hpc" {
   name = var.model
