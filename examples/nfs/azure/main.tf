@@ -77,7 +77,7 @@ resource "juju_model" "charmed-hpc" {
 }
 
 module "nfs-share" {
-  source = "git::https://github.com/charmed-hpc/charmed-hpc-terraform//modules/azure-managed-nfs"
+  source = "git::https://github.com/charmed-hpc/charmed-hpc-terraform//modules/nfs/azure"
 
   name                = "nfs-share"
   resource_group_name = azurerm_resource_group.nfs-group.name
