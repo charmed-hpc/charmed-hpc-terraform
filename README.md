@@ -104,7 +104,7 @@ tofu apply -auto-approve
 
 To learn more about the deployment and use of a Charmed HPC cluster, the following resources are available:
 
-* [Charmed HPC Documentation](https://canonical-charmed-hpc.readthedocs-hosted.com/en/latest)
+* [Charmed HPC Documentation](https://canonical-charmed-hpc.readthedocs-hosted.com/latest)
 * [Open an issue](https://github.com/charmed-hpc/charmed-hpc-terraform/issues/new?title=ISSUE+TITLE&body=*Please+describe+your+issue*)
 * [Ask a question on the Charmed HPC GitHub](https://github.com/orgs/charmed-hpc/discussions/categories/q-a)
 
