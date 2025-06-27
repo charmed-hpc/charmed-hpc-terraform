@@ -39,7 +39,6 @@ To run this example, execute:
 
 ```bash
 terraform init
-terraform plan
 terraform apply
 ```
 
