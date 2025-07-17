@@ -1,4 +1,4 @@
-# Copyright 2024 Canonical Ltd.
+# Copyright 2024-2025 Canonical Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,6 +57,6 @@ clean:
     find . -name .terraform.lock.hcl -type f | xargs rm -rf
     find . -name "terraform.tfstate*" -type f | xargs rm -rf
 
-# show available recipes
+# Show available recipes
 help:
     @just --list --unsorted
