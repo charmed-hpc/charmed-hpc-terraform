@@ -27,9 +27,7 @@ jobs:
       - name: Install `opentofu`
         run: sudo snap install opentofu --classic
       - name: Install `just`
-        uses: extractions/setup-just@v2
-        with:
-          just-version: 1.38.0
+        run: sudo snap install just --classic
       - name: Run validation tests
         run: just validate
 
