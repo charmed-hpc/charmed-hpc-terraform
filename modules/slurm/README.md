@@ -20,6 +20,17 @@ This module offers the following configurable units:
 | `kiosk`                       | object      | Configuration options for the Slurm kiosk node                    | `{ app_name = "login-node" }`  |          |
 | `compute_partitions`          | map(object) | Map of Slurm compute partitions to deploy                         | `{ "compute": { units = 1 } }` |          |
 
+Each deployment option object (`controller`, `database`, `rest_api`, `kiosk`) and
+each entry of `compute_partitions` accepts the following keys:
+
+| Name          | Type         | Description                                                                                     |
+|---------------|--------------|-------------------------------------------------------------------------------------------------|
+| `app_name`    | string       | Name of the deployed Juju application                                                           |
+| `units`       | number       | Number of units to deploy when no `machines` are provided (defaults to 1)                       |
+| `config`      | map(string)  | Charm configuration options                                                                     |
+| `constraints` | string       | Juju constraints to apply to the deployment                                                     |
+| `machines`    | list(string) | Machines to place the application on. If set, `units` is ignored.                               |
+
 ### Outputs
 
 After applying, the module exports the following outputs:

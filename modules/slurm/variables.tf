@@ -46,8 +46,10 @@ variable "controller" {
   description = "Configuration options for the Slurm controller node."
   type = object({
     app_name    = optional(string),
+    units       = optional(number),
     config      = optional(map(string)),
-    constraints = optional(string)
+    constraints = optional(string),
+    machines    = optional(list(string), [])
   })
   nullable = false
   default = {
@@ -59,8 +61,10 @@ variable "database" {
   description = "Configuration options for the Slurm database node."
   type = object({
     app_name    = optional(string),
+    units       = optional(number),
     config      = optional(map(string)),
-    constraints = optional(string)
+    constraints = optional(string),
+    machines    = optional(list(string), [])
   })
   nullable = false
   default = {
@@ -72,8 +76,10 @@ variable "rest_api" {
   description = "Configuration options for the Slurm REST API node."
   type = object({
     app_name    = optional(string),
+    units       = optional(number),
     config      = optional(map(string)),
-    constraints = optional(string)
+    constraints = optional(string),
+    machines    = optional(list(string), [])
   })
   nullable = false
   default = {
@@ -87,7 +93,8 @@ variable "kiosk" {
     app_name    = optional(string),
     units       = optional(number),
     config      = optional(map(string)),
-    constraints = optional(string)
+    constraints = optional(string),
+    machines    = optional(list(string), [])
   })
   nullable = false
   default = {
@@ -102,7 +109,8 @@ variable "compute_partitions" {
     object({
       units       = optional(number),
       config      = optional(map(string)),
-      constraints = optional(string)
+      constraints = optional(string),
+      machines    = optional(list(string), [])
     })
   )
   default = {

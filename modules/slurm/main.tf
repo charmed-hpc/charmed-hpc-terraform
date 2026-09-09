@@ -12,7 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Setup control plane
+locals {
+  controller_machines = length(var.controller.machines) == 0
+  database_machines   = length(var.database.machines) == 0
+  rest_api_machines   = length(var.rest_api.machines) == 0
+  kiosk_machines      = length(var.kiosk.machines) == 0
+}
+
+# slurmdbd and slurmrestd do not support HA setups
+resource "terraform_data" "single_unit_services" {
+  lifecycle {
+    precondition {
+      condition     = coalesce(var.database.units, 1) <= 1 && length(var.database.machines) <= 1
+      error_message = "The Slurm database charm (slurmdbd) does not support HA setups and must be deployed with at most one unit or machine."
+    }
+
+    precondition {
+      condition     = coalesce(var.rest_api.units, 1) <= 1 && length(var.rest_api.machines) <= 1
+      error_message = "The Slurm REST API charm (slurmrestd) does not support HA setups and must be deployed with at most one unit or machine."
+    }
+  }
+}
 
 module "slurmctld" {
   source = "git::https://github.com/canonical/slurm-charms//charms/slurmctld/terraform?ref=9943f751b39268c24167ccddf9dc7145ce69cdae"
@@ -22,7 +42,8 @@ module "slurmctld" {
   base       = var.base
 
   channel     = var.channel
-  units       = 1
+  machines    = local.controller_machines ? null : var.controller.machines
+  units       = local.controller_machines ? coalesce(var.controller.units, 1) : null
   config      = var.controller.config
   constraints = var.controller.constraints
 }
@@ -35,7 +56,8 @@ module "slurmdbd" {
   base       = var.base
 
   channel     = var.channel
-  units       = 1
+  machines    = local.database_machines ? null : var.database.machines
+  units       = local.database_machines ? coalesce(var.database.units, 1) : null
   config      = var.database.config
   constraints = var.database.constraints
 }
@@ -48,7 +70,8 @@ module "slurmrestd" {
   base       = var.base
 
   channel     = var.channel
-  units       = 1
+  machines    = local.rest_api_machines ? null : var.rest_api.machines
+  units       = local.rest_api_machines ? coalesce(var.rest_api.units, 1) : null
   config      = var.rest_api.config
   constraints = var.rest_api.constraints
 }
@@ -61,7 +84,8 @@ module "sackd" {
   base       = var.base
 
   channel     = var.channel
-  units       = var.kiosk.units
+  machines    = local.kiosk_machines ? null : var.kiosk.machines
+  units       = local.kiosk_machines ? coalesce(var.kiosk.units, 1) : null
   config      = var.kiosk.config
   constraints = var.kiosk.constraints
 }
@@ -133,7 +157,8 @@ module "slurmd_partitions" {
   base       = var.base
 
   channel     = var.channel
-  units       = each.value.units
+  machines    = length(each.value.machines) == 0 ? null : each.value.machines
+  units       = length(each.value.machines) == 0 ? coalesce(each.value.units, 1) : null
   config      = each.value.config
   constraints = each.value.constraints
 }

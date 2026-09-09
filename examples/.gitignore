@@ -1,2 +1,0 @@
-# Lock files are committed for executable examples, ignored elsewhere.
-!.terraform.lock.hcl
